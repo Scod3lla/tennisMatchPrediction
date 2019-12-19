@@ -210,7 +210,7 @@ def fieldWinLose (year):
 # df -> dataframe di tutti gli anni precedenti
 # now -> dataframe dell'anno corrente
 # RETURN  dataframe del field win/lose rateo per tipo di campo
-def fieldWinLoseRateo(df, now, year = 9):
+def OLDfieldWinLoseRateo(df, now, year = 9):
     playerList=set(df["Winner"]) | set(df["Loser"]) | set(now["Winner"]) | set(now["Loser"])
     print(len(playerList))
     subDf = pd.DataFrame(data = {"player":list(playerList), "hardWin": 1, "clayWin":1, "grassWin":1, "hardLose":1,
@@ -246,10 +246,54 @@ def fieldWinLoseRateo(df, now, year = 9):
         subDf.loc[index,"hardLose"] = row["hardLose"]/(row["hardWin"] + row["hardLose"])
         subDf.loc[index,"clayLose"] = row["clayLose"]/(row["clayWin"] + row["clayLose"])
         subDf.loc[index,"grassLose"] = row["grassLose"]/(row["grassWin"] + row["grassLose"])
-        
-
 
     return subDf
+
+
+# Calcola il rateo di vittoria nel tipo di campo per ogni giocatore
+# INPUT
+# df -> dataframe di tutti gli anni precedenti
+# now -> dataframe dell'anno corrente
+# RETURN  dataframe del field win/lose rateo per tipo di campo
+def fieldWinLoseRateo(df, now):
+    playerList=set(df["Winner"]) | set(df["Loser"]) | set(now["Winner"]) | set(now["Loser"])
+    print(len(playerList))
+    subDf = pd.DataFrame(data = {"player":list(playerList), "hardWin": 1, "clayWin":1, "grassWin":1, "hardLose":1,
+                                                             "clayLose":1, "grassLose":1})
+    i = 0
+    for player in playerList:
+        #print(player)
+        win  = df[df["Winner"] == player].loc[:,["Winner", "Loser", "Surface"]]
+        #print(win)
+       
+        subDf.loc[subDf["player"] == player,"hardWin"] += win[win["Surface"] == "Hard"].shape[0]
+        subDf.loc[subDf["player"] == player,"clayWin"] += win[win["Surface"] == "Clay"].shape[0]
+        subDf.loc[subDf["player"] == player,"grassWin"] += win[win["Surface"] == "Grass"].shape[0]
+        
+        lose  = df[df["Loser"] == player].loc[:,["Winner", "Loser", "Surface"]]
+        #print(lose)
+        
+        subDf.loc[subDf["player"] == player,"hardLose"] += lose[lose["Surface"] == "Hard"].shape[0]
+        subDf.loc[subDf["player"] == player,"clayLose"] += lose[lose["Surface"] == "Clay"].shape[0]
+        subDf.loc[subDf["player"] == player,"grassLose"] += lose[lose["Surface"] == "Grass"].shape[0]
+
+        print("Processing all player {}/{}".format(i,len(playerList)), end="\r")
+        i+=1
+
+    print("")
+    
+    
+    for index, row in subDf.iterrows():
+        subDf.loc[index,"hardWin"] = row["hardWin"]/(row["hardWin"] + row["hardLose"])
+        subDf.loc[index,"clayWin"] = row["clayWin"]/(row["clayWin"] + row["clayLose"])
+        subDf.loc[index,"grassWin"] = row["grassWin"]/(row["grassWin"] + row["grassLose"])
+        
+        subDf.loc[index,"hardLose"] = row["hardLose"]/(row["hardWin"] + row["hardLose"])
+        subDf.loc[index,"clayLose"] = row["clayLose"]/(row["clayWin"] + row["clayLose"])
+        subDf.loc[index,"grassLose"] = row["grassLose"]/(row["grassWin"] + row["grassLose"])
+
+    return subDf
+
 
 
 # Aggiunge la colonna con il rateo in quel tipo di campo

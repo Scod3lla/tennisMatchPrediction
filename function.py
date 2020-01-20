@@ -417,7 +417,7 @@ def allPlayer(tournament):
     
     noNameCol.remove("Player1")
     
-    print(noNameCol)
+    # print(noNameCol)
     
     # rinomino le colonne
     allP1.columns = noNameCol
@@ -533,35 +533,20 @@ def tournamentSimulation(tournament, lastYear, tree):
 
     return players
 
-# train dell'albero di decisione
-def trainDecisionTree(data):
-    from sklearn.model_selection import train_test_split
-    from sklearn import tree
-    from sklearn.metrics import accuracy_score
-    
-    X = data.drop(["Player1", "Player2","target"],axis = 1)
-    y=data["target"]
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, shuffle = False)
+# Crea una confusion matrix
+def confusionMatrix(y_test, y_pred):
+    from sklearn.metrics import confusion_matrix, classification_report
+    import seaborn as sns
+    import matplotlib.pyplot as plt
 
-    leavesArr = []
+    conf_stat = confusion_matrix(y_true=y_test, y_pred=y_pred)
 
-    # Esploro variando il numero di foglie
-
-    print(X_train.columns)
-
-    for max_leaves in range(2,50):
-        # train and predict
-        dt = tree.DecisionTreeClassifier(max_leaf_nodes=max_leaves)
-        dt.fit(X_train,y_train)
-        train_acc = accuracy_score(y_true=y_train, y_pred=dt.predict(X_train))
-        test_acc = accuracy_score(y_true=y_test, y_pred=dt.predict(X_test))
-        # matr[max_leaves, max_depth]=test_acc
-        leavesArr.append(tuple([test_acc,max_leaves]))
-        # print ("Leaves:", max_leaves, " - Train Accuracy:", train_acc, " - Test Accuracy:", test_acc)
-        
-    print("max Accuracy",max(leavesArr)[0], "| number leaves",max(leavesArr)[1] )
-
-    dt = tree.DecisionTreeClassifier(max_leaf_nodes = max(leavesArr)[1])
-    dt.fit(X_train,y_train)
-    return dt    
+    fig, ax = plt.subplots(figsize=(5,5), tight_layout=True)
+    sns.heatmap(conf_stat, annot=True, fmt=".3f", 
+                linewidths=.5, square = True, 
+                cmap = 'Blues_r',cbar=False,
+                xticklabels=[0,1],
+                yticklabels=[0,1]);
+    ax.set_ylabel('True Label', fontsize=14);
+    ax.set_xlabel('Predicted Label', fontsize=14);

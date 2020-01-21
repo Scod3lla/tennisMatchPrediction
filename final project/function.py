@@ -5,9 +5,6 @@ from sklearn.preprocessing import LabelEncoder
 from pandas.api.types import CategoricalDtype
 
 
-# COMMENTA LE FUNZIONI !!!!
-# INPUT E OUTPUT !!!
-# MANAGE BETTER PRINT
 
 # CARICAMENTO DATI
 # INPUT
@@ -38,7 +35,7 @@ def playEncode(df):
 # dfCopy -> dataframe da formattare
 # playerEncode -> se passato fa encoding dei nomi
 # RETURN un nuovo df formattato
-def generalFormatting(dfCopy, playerEncode = 0):
+def generalFormatting(dfCopy):
     df = dfCopy.copy()
     
     # Manage different NA column with different fill !
@@ -59,10 +56,7 @@ def generalFormatting(dfCopy, playerEncode = 0):
 
     df.rename(columns=dictCol, inplace=True)
     
-    if playerEncode != 0:
-        df.replace({"Player1":playerEncode, "Player2":playerEncode}, inplace = True)
     
- 
     # One Hot Encoding
     df = pd.get_dummies(df, columns = ["Court", "Surface", "Best of"])
     
@@ -113,7 +107,7 @@ def randomSwap(df, randomNumber):
     print("Colonne che verranno swappate:")
     print(swapCol)
     for i in range(0,randomNumber):
-        print("Random swap {}/{}".format(i,randomNumber), end="\r")
+        print("Random swap {}/{}".format(i+1,randomNumber), end="\r")
         pos = np.random.randint(0,maxRow)
         for i in range(0, int(len(swapCol)/2)):
             index=i*2
@@ -190,7 +184,7 @@ def fieldWinLose (year):
         df= df.loc[:,["Winner", "Loser","Surface"]]        
         frames = [allCsv, df]
         allCsv = pd.concat(frames, sort = False)
-        print("Loaded dataset 200", i, end="\r")
+        print("Loaded dataset 200{}".format(i), end="\r")
     
     # change this depending on train year
     for i in range(0,year):
@@ -198,7 +192,7 @@ def fieldWinLose (year):
         df= df.loc[:,["Winner", "Loser","Surface"]]        
         frames = [allCsv, df]
         allCsv = pd.concat(frames, sort = False)
-        print("Loaded dataset 201", i, end="\r")
+        print("Loaded dataset 201{}".format(i), end="\r")
     
     print("")
 
@@ -213,8 +207,7 @@ def fieldWinLose (year):
 def OLDfieldWinLoseRateo(df, now, year = 9):
     playerList=set(df["Winner"]) | set(df["Loser"]) | set(now["Winner"]) | set(now["Loser"])
     print(len(playerList))
-    subDf = pd.DataFrame(data = {"player":list(playerList), "hardWin": 1, "clayWin":1, "grassWin":1, "hardLose":1,
-                                                             "clayLose":1, "grassLose":1})
+    subDf = pd.DataFrame(data = {"player":list(playerList), "hardWin": 1, "clayWin":1, "grassWin":1, "hardLose":1, "clayLose":1, "grassLose":1})
     i = 0
     for index, row in df.iterrows():
         if row["Winner"] in playerList:
@@ -233,7 +226,7 @@ def OLDfieldWinLoseRateo(df, now, year = 9):
             subDf.loc[subDf["player"]==row["Loser"],"clayLose"]+=1
             subDf.loc[subDf["player"]==row["Loser"],"grassLose"]+=1
 
-        print("Processing all player {}/{}".format(i,df.shape[0]), end="\r")
+        print("Processing all player {}/{}".format(i+1,df.shape[0]), end="\r")
         i+=1
     
     print("")
@@ -258,14 +251,13 @@ def OLDfieldWinLoseRateo(df, now, year = 9):
 def fieldWinLoseRateo(df, now):
     playerList=set(df["Winner"]) | set(df["Loser"]) | set(now["Winner"]) | set(now["Loser"])
     print(len(playerList))
-    subDf = pd.DataFrame(data = {"player":list(playerList), "hardWin": 1, "clayWin":1, "grassWin":1, "hardLose":1,
-                                                             "clayLose":1, "grassLose":1})
+    subDf = pd.DataFrame(data = {"player":list(playerList), "hardWin": 1, "clayWin":1, "grassWin":1, "hardLose":1, "clayLose":1, "grassLose":1})
     i = 0
     for player in playerList:
         #print(player)
         win  = df[df["Winner"] == player].loc[:,["Winner", "Loser", "Surface"]]
         #print(win)
-       
+    
         subDf.loc[subDf["player"] == player,"hardWin"] += win[win["Surface"] == "Hard"].shape[0]
         subDf.loc[subDf["player"] == player,"clayWin"] += win[win["Surface"] == "Clay"].shape[0]
         subDf.loc[subDf["player"] == player,"grassWin"] += win[win["Surface"] == "Grass"].shape[0]
@@ -277,7 +269,7 @@ def fieldWinLoseRateo(df, now):
         subDf.loc[subDf["player"] == player,"clayLose"] += lose[lose["Surface"] == "Clay"].shape[0]
         subDf.loc[subDf["player"] == player,"grassLose"] += lose[lose["Surface"] == "Grass"].shape[0]
 
-        print("Processing all player {}/{}".format(i,len(playerList)), end="\r")
+        print("Processing all player {}/{}".format(i+1,len(playerList)), end="\r")
         i+=1
 
     print("")
@@ -327,7 +319,7 @@ def addFieldWin(now, fwlr):
         now.loc[index,"P2_winningField"] = value2
         now.loc[index,"P2_losingField"] = 1 - value2
 
-        print("Adding rateo {}/{}".format(index, now.shape[0]), end="\r")
+        print("Adding rateo {}/{}".format(index+1, now.shape[0]), end="\r")
     
     print("")
 
@@ -376,7 +368,7 @@ def addPrevWin(df_new):
             sub.loc[sub["player"] == row["Player1"],"P1_precLose"] += 1
             sub.loc[sub["player"]==row["Player1"],"P1_precWin"] = 0
 
-        print("adding win streak / lose streak {}/{}".format( index, df_new.shape[0]), end="\r")
+        print("adding win streak / lose streak {}/{}".format( index+1, df_new.shape[0]), end="\r")
 
     print("")
 
@@ -454,6 +446,7 @@ def tournamentSimulation(tournament, lastYear, tree):
     
     # colonne comuni
     nonPlayerCol = set(tournament.columns) - set(p1Col + p2Col)
+    nonPlayerCol.remove("Tournament")
     #print(nonPlayerCol)
     
     p1Col.remove("Player1")
